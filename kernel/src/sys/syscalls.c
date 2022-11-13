@@ -1,6 +1,3 @@
-#define		PORT_INPUT_BYTE			0x00
-#define		PORT_OUTPUT_BYTE		0x01
-#define		HELLO_WORLD_CONSOLE		0x02
 /**
  * @file kernel/src/sys/syscalls.c
  * @authors Александр Гагарин aka Noverd
@@ -10,7 +7,6 @@
  *
  *
  */
-#include "sys/syscalls.h"
 #include "io/ports.h"
 #include "io/tty.h"
 /*!
