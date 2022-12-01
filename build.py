@@ -11,7 +11,7 @@ CC = f"{_CC} {CFLAGS}"
 
 SRC_TARGETS = []
 BIN_TARGETS = []
-BINFLDR = "bin\\" if not (sys.platform == "linux" or sys.platform == "linux2") else "bin/"
+BINFLDR = "bin\\" if sys.platform not in ["linux", "linux2"] else "bin/"
 
 def warn(message):
     print(f"[\x1b[33;1mПРЕДУПРЕЖДЕНИЕ\x1b[0m]: {message}")
@@ -26,14 +26,17 @@ def compile_kernel(warnings=False):
         os.mkdir("bin")
     if not os.path.isdir(f"bin{os.sep}kernel"):
         os.mkdir(f"bin{os.sep}kernel")
-    
+
     filescount = len(SRC_TARGETS)
 
     updated = []
     for i in range(filescount):
-        BIN_TARGETS.append(os.path.join(BINFLDR, os.path.basename(SRC_TARGETS[i]) + '.o '  ))
+        BIN_TARGETS.append(
+            os.path.join(BINFLDR, f'{os.path.basename(SRC_TARGETS[i])}.o ')
+        )
+
         srcf = SRC_TARGETS[i]
-        objf = os.path.join(BINFLDR, os.path.basename(SRC_TARGETS[i]) + '.o')
+        objf = os.path.join(BINFLDR, f'{os.path.basename(SRC_TARGETS[i])}.o')
         if os.path.isfile(objf):
             if os.path.getmtime(srcf)>os.path.getmtime(objf):
                 updated.append(srcf)
@@ -43,7 +46,16 @@ def compile_kernel(warnings=False):
     filescount = len(updated)
 
     for i in range(filescount):
-        compile(os.path.join("bin\\" if not (sys.platform == "linux" or sys.platform == "linux2") else "bin/", os.path.basename(updated[i]) + '.o '), updated[i], i+1, filescount, warnings=warnings)
+        compile(
+            os.path.join(
+                "bin\\" if sys.platform not in ["linux", "linux2"] else "bin/",
+                f'{os.path.basename(updated[i])}.o ',
+            ),
+            updated[i],
+            i + 1,
+            filescount,
+            warnings=warnings,
+        )
 
 def link_kernel():
     print("Линкуем...")
@@ -93,26 +105,24 @@ def create_iso():
     print("Создаем образ ISO...")
     start_time = time.time()
 
-    if sys.platform == "linux" or sys.platform == "linux2": 
+    if sys.platform in ["linux", "linux2"]: 
         os.system("grub-mkrescue -o \"SayoriOS.iso\" isodir/ -V SayoriOS")
     else:
         os.system("ubuntu run grub-mkrescue -o \"SayoriOS.iso\" isodir/ -V SayoriOS ")
-    
+
     print(f"Сборка ISO/Grub образа заняла: {(time.time() - start_time):2f} сек.")
 
 SHARED_PARAMS = "-d guest_errors -rtc base=localtime -usb -device ac97 -soundhw pcspk"
 
 def run_qemu():
-    if os.path.exists("ata.vhd"):
-        pass
-    else:
+    if not os.path.exists("ata.vhd"):
         os.system("qemu-img create -f raw ata.vhd 32M")
     os.system("qemu-img create -f raw fdb.img 1440K")
-    
+
     qemu_command = f"qemu-system-i386 -name SayoriOS -m {MEMORY}" \
         " -netdev socket,id=n0,listen=:2030 -device rtl8139,netdev=n0,mac=11:11:11:11:11:11 " \
         " -cdrom SayoriOS.iso -fdb fdb.img -hda ata.vhd -serial file:Qemu.log "+SHARED_PARAMS
-        
+
     os.system(qemu_command)
 
 def run_kvm():
@@ -129,19 +139,15 @@ def run_kvm():
 
 
 def run_qemu_debug():
-    if os.path.exists("ata.vhd"):
-        pass
-    else:
+    if not os.path.exists("ata.vhd"):
         os.system("qemu-img create -f raw ata.vhd 32M")
 
-    
+
     qemu_command = f"qemu-system-i386 -name SayoriOS -m {MEMORY}" \
         " -netdev socket,id=n0,listen=:2030 -device rtl8139,netdev=n0,mac=11:11:11:11:11:11 " \
-        " -d guest_errors -cdrom SynapseOS.iso -hda ata.vhd -serial  file:Qemu.log -rtc base=localtime" 
+        " -d guest_errors -cdrom SynapseOS.iso -hda ata.vhd -serial  file:Qemu.log -rtc base=localtime"
     print("gdb kernel.elf -ex \"target remote localhost:1234\"")
-    os.system(
-        qemu_command + """ -s -S"""
-        )
+    os.system(f"""{qemu_command} -s -S""")
 
 if __name__ == "__main__":
     try:

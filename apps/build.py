@@ -28,20 +28,17 @@ def build(typ, infile, outfile):
             if os.path.getmtime(infile)>os.path.getmtime(outfile):
                 print(f"[\x1b[32;1mСБОРКА\x1b[0m] Компилируем {infile}")
                 subprocess.call(cmd, shell=True)
-            else:
-                # print(f"[\x1b[33;1mСБОРКА\x1b[0m]: Пропускаем {infile}")
-                pass
         else:
             print(f"[\x1b[32;1mСБОРКА\x1b[0m] Компилируем {infile}")
             subprocess.call(cmd, shell=True)
-                
+
     if typ=="link":
         # print(f"[\x1b[32mBUILD\x1b[0m]: Linking   {infile.split(" ")[0]}") # Error
         print(f"[\x1b[32;1mСБОРКА\x1b[0m]: Линкуем  ", infile.split(" ")[0])
         cmd = f"{LD} {outfile} {infile}"
         subprocess.call(cmd, shell=True)
     if typ=="copy":
-        print(f"[\x1b[34;1mКОПИРУЕМ\x1b[0m]: Копируем  ", infile+" -> "+outfile)
+        print(f"[\x1b[34;1mКОПИРУЕМ\x1b[0m]: Копируем  ", f"{infile} -> {outfile}")
         shutil.copy(infile, outfile)
 
 def build_all():
@@ -53,7 +50,7 @@ def build_all():
         os.mkdir("../bin/apps/")
     except Exception as E:
         print(E)
-    
+
     print("[\x1b[33;1mВНИМАНИЕ\x1b[0m] Компилируем приложения")
     '''
     os.system(f"{CC} examples/C/HelloWorld.c -o ./bin/HelloWorld.o")
@@ -84,7 +81,7 @@ def build_all():
     build("compile", "apps/NDRAEY/Carol/main2.c", "./bin/carol_2.o")
     build("compile", "apps/NDRAEY/Carol/dukelib.c", "./bin/carol_duke.o")
     build("compile", "apps/NDRAEY/Carol/animator.c", "./bin/carol_david.o")
-    
+
     build("compile", "apps/NDRAEY/Sovrum/animator.c", "./bin/sovrum_david.o")
     build("compile", "apps/NDRAEY/Sovrum/dukelib.c", "./bin/sovrum_duke.o")
     build("compile", "apps/NDRAEY/Sovrum/main.c", "./bin/sovrum.o")
@@ -114,25 +111,40 @@ def build_all():
 
     print("[\x1b[33;1mВНИМАНИЕ\x1b[0m] Выполняем линковку приложений")
     # There we should swap the second and third arguments (according to original code)
-    build("link", "./bin/HelloWorld.o" + O_LIBC, "../bin/apps/hi")
-    build("link", "./bin/popsort_int_test.o" + O_LIBC, "../bin/apps/sort")
-    build("link", "./bin/vesa_Russia.o" + O_LIBC, "../bin/apps/Russia", )
-    build("link", "./bin/beep.o" + O_LIBC, "../bin/apps/beep")
-    build("link", "./bin/char.o" + O_LIBC, "../bin/apps/char")
-    build("link", "./bin/NeraMath.o" + O_LIBC, "../bin/apps/NeraMath")
-    build("link", "./bin/VGGI.o" + O_LIBC, "../bin/apps/vggi")
-    build("link", "./bin/snake.o" + O_LIBC, "../bin/apps/snake")
+    build("link", f"./bin/HelloWorld.o{O_LIBC}", "../bin/apps/hi")
+    build("link", f"./bin/popsort_int_test.o{O_LIBC}", "../bin/apps/sort")
+    build("link", f"./bin/vesa_Russia.o{O_LIBC}", "../bin/apps/Russia")
+    build("link", f"./bin/beep.o{O_LIBC}", "../bin/apps/beep")
+    build("link", f"./bin/char.o{O_LIBC}", "../bin/apps/char")
+    build("link", f"./bin/NeraMath.o{O_LIBC}", "../bin/apps/NeraMath")
+    build("link", f"./bin/VGGI.o{O_LIBC}", "../bin/apps/vggi")
+    build("link", f"./bin/snake.o{O_LIBC}", "../bin/apps/snake")
     build("link", "./bin/test.o", "../bin/apps/test")
-    build("link", "./bin/imageview.o" + O_LIBC, "../bin/apps/imageview")
-    build("link", "./bin/melody.o" + O_LIBC, "../bin/apps/melody")
-    build("link", "./bin/chronicles.o" + O_LIBC, "../bin/apps/chronicles")
-    build("link", "./bin/snakepaint.o" + O_LIBC, "../bin/apps/snakepaint")
-    build("link", "./bin/memtest.o" + O_LIBC, "../bin/apps/memtest")
-    build("link", "./bin/args.o" + O_LIBC, "../bin/apps/args")
-    build("link", "./bin/tshell.o" + O_LIBC, "../bin/apps/tshell")
-    build("link", "./bin/carol.o ./bin/carol_duke.o ./bin/carol_david.o " + O_LIBC, "../bin/apps/carol")
-    build("link", "./bin/carol_2.o ./bin/carol_duke.o ./bin/carol_david.o " + O_LIBC, "../bin/apps/carol_2")
-    build("link", "./bin/sovrum.o ./bin/sovrum_duke.o ./bin/sovrum_david.o " + O_LIBC, "../bin/apps/sovrum")
+    build("link", f"./bin/imageview.o{O_LIBC}", "../bin/apps/imageview")
+    build("link", f"./bin/melody.o{O_LIBC}", "../bin/apps/melody")
+    build("link", f"./bin/chronicles.o{O_LIBC}", "../bin/apps/chronicles")
+    build("link", f"./bin/snakepaint.o{O_LIBC}", "../bin/apps/snakepaint")
+    build("link", f"./bin/memtest.o{O_LIBC}", "../bin/apps/memtest")
+    build("link", f"./bin/args.o{O_LIBC}", "../bin/apps/args")
+    build("link", f"./bin/tshell.o{O_LIBC}", "../bin/apps/tshell")
+    build(
+        "link",
+        f"./bin/carol.o ./bin/carol_duke.o ./bin/carol_david.o {O_LIBC}",
+        "../bin/apps/carol",
+    )
+
+    build(
+        "link",
+        f"./bin/carol_2.o ./bin/carol_duke.o ./bin/carol_david.o {O_LIBC}",
+        "../bin/apps/carol_2",
+    )
+
+    build(
+        "link",
+        f"./bin/sovrum.o ./bin/sovrum_duke.o ./bin/sovrum_david.o {O_LIBC}",
+        "../bin/apps/sovrum",
+    )
+
 
     try:
         if shutil.which("fasm"):
@@ -149,16 +161,20 @@ def build_all():
 
     for i in extlibs:
         print(f"[\x1b[32;1mСБОРКА\x1b[0m]: Сбока внешней библиотеки {i} ", end='')
-        os.chdir("extlibs/"+i)
-        exw = subprocess.call("make", shell=True)
-        if exw:
+        os.chdir(f"extlibs/{i}")
+        if exw := subprocess.call("make", shell=True):
             print("[ОШИБКА]")
         else:
             print("[ОК]")
         os.chdir("../..")
 
     build("compile", "examples/C/valera.c", "./bin/valera.o")
-    build("link", "./bin/valera.o extlibs/ValeraC/libvalera.lib "+O_LIBC, "../bin/apps/valera")
+    build(
+        "link",
+        f"./bin/valera.o extlibs/ValeraC/libvalera.lib {O_LIBC}",
+        "../bin/apps/valera",
+    )
+
 
     '''
     if BUILD_BASIC:
